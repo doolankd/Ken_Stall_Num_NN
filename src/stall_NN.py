@@ -14,7 +14,7 @@ from os import listdir
 from os.path import isfile, join
 from sklearn.metrics import confusion_matrix
 
-# CHANGE PATH
+# PATH
 PATH = "/home/fizzer/ros_ws/src/my_controller/pictures/NN_stall_num_pics/all_pics"
 folder0 = PATH
 files0 = [f for f in listdir(PATH) if isfile(join(PATH, f))]
@@ -46,7 +46,7 @@ for num in all_stall_nums:
   # Ascii numbers start at 48 (0) - so 1 will be at 49
   #print(num)
   ascii_num = 49 #49
-  individual_num_array = np.array([[0,0,0,0,0,0]]) #np.array([[0,0,0,0,0,0,0,0]])
+  individual_num_array = np.array([[0,0,0,0,0,0,0,0]]) #np.array([[0,0,0,0,0,0,0,0]])
   current_char_to_num = ord(num) # gets ascii equivalent
   while current_char_to_num > ascii_num:
     ascii_num = ascii_num + 1
@@ -131,13 +131,21 @@ print("master_label_set shape: " + str(master_label_set.shape))
 print("master_data_set shape: " + str(master_data_set.shape))
 
 # ./stall_NN.py
-
+'''
 from keras import layers
 from keras import models
 from keras import optimizers
 
 from keras.utils import plot_model
 from keras import backend
+'''
+
+from tensorflow.python.keras import layers
+from tensorflow.python.keras import models
+from tensorflow.python.keras import optimizers
+
+from tensorflow.python.keras.utils import plot_model
+from tensorflow.python.keras import backend
 
 def reset_weights(model):
   for ix, layer in enumerate(model.layers):
@@ -153,16 +161,16 @@ def reset_weights(model):
               bias_initializer(shape=len(old_biases))])
 
 conv_model = models.Sequential()
-conv_model.add(layers.Conv2D(24, (4, 4), activation='relu',
+conv_model.add(layers.Conv2D(32, (4, 4), activation='relu',
                              input_shape=(100, 100, 3)))
-conv_model.add(layers.MaxPooling2D((8, 8)))
-conv_model.add(layers.Conv2D(48, (3, 3), activation='relu')) # 48
+conv_model.add(layers.MaxPooling2D((12, 12)))
+conv_model.add(layers.Conv2D(48, (4, 4), activation='relu')) # 48
 conv_model.add(layers.MaxPooling2D((4, 4)))
 #conv_model.add(layers.Conv)
 conv_model.add(layers.Flatten())
-conv_model.add(layers.Dropout(0.80)) # are also ok:0.60, 0.48
-conv_model.add(layers.Dense(60, activation='relu')) # 100
-conv_model.add(layers.Dense(6, activation='softmax'))
+conv_model.add(layers.Dropout(0.40)) # are also ok:0.60, 0.48
+conv_model.add(layers.Dense(128, activation='relu')) # 100
+conv_model.add(layers.Dense(8, activation='softmax'))
 
 print(conv_model.summary())
 
@@ -176,7 +184,7 @@ conv_model.compile(loss='categorical_crossentropy',
 history_conv = conv_model.fit(master_data_set, master_label_set, 
                               validation_split=VALIDATION_SPLIT, 
                               epochs=50, 
-                              batch_size=6)
+                              batch_size=24)
 
 plt.plot(history_conv.history['loss'])
 plt.plot(history_conv.history['val_loss'])
@@ -283,5 +291,8 @@ def displayImage(index):
   print("Guess prediction: " + str(guess_prediction))
 
 displayImage(3)
+
+# saving the NN as an object
+models.save_model(conv_model,"NN_object")
 
 # ./stall_NN.py
